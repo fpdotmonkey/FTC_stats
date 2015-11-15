@@ -1,0 +1,17 @@
+//
+// desciptive.js
+//
+// Copyright (c) 2015 Fletcher Porter
+//
+
+function makeTeamMapping(tournData) {
+    var mapping = math.matrix();
+
+    
+    
+    return mapping;
+}
+
+function opr(tournData) {
+    
+}
