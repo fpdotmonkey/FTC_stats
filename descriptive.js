@@ -4,8 +4,6 @@
 // Copyright (c) 2015 Fletcher Porter
 //
 
-var math = require('mathjs');
-
 function formatData(data) {  // [ r1, r2, b1, b2, redScore, blueScore ]
     
 }
@@ -30,19 +28,20 @@ function makeTeamMapping(data) {
     return mapping;
 }
 
-function makePairingMatrix(data, team_map) {
-    var n = team_map.length;
-    var Mat = math.zeros(n, n, 'sparse');
+function makePairingMatrix(data) {
+    var map = makeTeamMapping(data);
+    var n = map.length;
+    var Mat = math.zeros(n, n);
 
     for (i = 0; i < data.length; ++i) {
         var r1 = data[i][0];
         var r2 = data[i][1];
         var b1 = data[i][2];
         var b2 = data[i][3];
-        var r1_i = team_map.indexOf(r1);
-        var r2_i = team_map.indexOf(r2);
-        var b1_i = team_map.indexOf(b1);
-        var b2_i = team_map.indexOf(b2);
+        var r1_i = map.indexOf(r1);
+        var r2_i = map.indexOf(r2);
+        var b1_i = map.indexOf(b1);
+        var b2_i = map.indexOf(b2);
         
         Mat._data[r1_i][r2_i] += 1;
         Mat._data[r2_i][r1_i] += 1;
@@ -54,12 +53,35 @@ function makePairingMatrix(data, team_map) {
         Mat._data[b1_i][b1_i] += 1;
         Mat._data[b2_i][b2_i] += 1;
     }
-    console.log(Mat._data);
     return Mat;
 }
 
-function opr(tournData) {
-    
+function scores(data) {
+    var map = makeTeamMapping(data);
+    var n = map.length;
+    var scores = math.zeros(n, 1);
+
+    for (i = 0; i < data.length; ++i) {
+        var r1 = data[i][0];
+        var r2 = data[i][1];
+        var b1 = data[i][2];
+        var b2 = data[i][3];
+        var r1_i = map.indexOf(r1);
+        var r2_i = map.indexOf(r2);
+        var b1_i = map.indexOf(b1);
+        var b2_i = map.indexOf(b2);
+
+        scores._data[r1_i][0] += data[i][4];  // indexing format due to scores
+        scores._data[r2_i][0] += data[i][4];  // being a column vector
+        scores._data[b1_i][0] += data[i][5];
+        scores._data[b2_i][0] += data[i][5];
+    }
+    return scores;
+}
+
+function opr(data) {
+    var opr = math.multiply(math.inv(makePairingMatrix(data)), scores(data));
+    return opr;
 }
 
 data = [[92, 3595, 8336, 7023, 295, 189],
@@ -208,4 +230,5 @@ data = [[92, 3595, 8336, 7023, 295, 189],
 [5939, 5220, 6024, 6424, 296, 160]]
 
 
-console.log(MakePairingMatrix(a, makeTeamMapping(a)));
+console.log(opr(data));
+console.log(makeTeamMapping(data));
